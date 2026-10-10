@@ -1,0 +1,16 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    groups:
+      # These four are the native-linked dependencies this package ships — bumping them together
+      # (rather than as four separate PRs) matches how they're usually released and tested upstream.
+      native-deps:
+        patterns:
+          - "@gorhom/bottom-sheet"
+          - "react-native-gesture-handler"
+          - "react-native-reanimated"
+          - "react-native-safe-area-context"
