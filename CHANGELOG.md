@@ -15,6 +15,22 @@ dependency's minimum version.
   provider alongside `GestureHandlerRootView`/`BottomSheetModalProvider`, and added the exact error
   message to Troubleshooting.
 
+## [0.2.0] - 2026-10-12
+
+### Changed
+
+- **Breaking:** `@gorhom/bottom-sheet`, `react-native-gesture-handler`, `react-native-reanimated`,
+  and `react-native-safe-area-context` moved from `dependencies` to `peerDependencies`. Pinning our
+  own copies as regular dependencies risked a second, conflicting native-module install in any app
+  that also depends on them directly — which is effectively every Expo app, and became a real problem
+  once Expo SDK 54 started bundling Reanimated 4 (a major version this package's old `^3.10.0`
+  dependency range couldn't satisfy) by default. Consumers now install these four themselves — see
+  [Installation](#installation) in the README.
+- Peer ranges left unbounded on the upper end (e.g. `react-native-reanimated": ">=3.10.0"`) rather
+  than capped to a major, since this package only touches stable, long-unchanged
+  `@gorhom/bottom-sheet`/`react-native-safe-area-context` APIs and works unmodified across Reanimated
+  3 and 4, and Gesture Handler 2 and 3.
+
 ## [0.1.0] - 2026-10-10
 
 ### Added

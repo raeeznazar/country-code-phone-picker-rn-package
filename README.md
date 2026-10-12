@@ -32,21 +32,44 @@ countries, and a digits-only phone field wired together.
 npm install phone-code-picker
 ```
 
-This installs `@gorhom/bottom-sheet`, `react-native-gesture-handler`, `react-native-reanimated`, and
-`react-native-safe-area-context` automatically as regular dependencies — you don't need to add them
-to your own `package.json`. `react` and `react-native` themselves are peer dependencies (you already
-have them).
+`@gorhom/bottom-sheet`, `react-native-gesture-handler`, `react-native-reanimated`, and
+`react-native-safe-area-context` are **peer dependencies**, not regular dependencies — install
+whichever versions your app already uses (or install them fresh):
 
-**What npm *can't* do for you:** those four are native modules. Installing the JS package doesn't
-run `pod install`, add Babel plugins, or wrap your app in the right providers — that's a one-time
-setup step in every app that uses this package, package manager or not:
+```sh
+npm install @gorhom/bottom-sheet react-native-gesture-handler react-native-reanimated react-native-safe-area-context
+```
+
+> **Using Expo?** `expo install` resolves native-module versions against your SDK, so run everything
+> through it in one go instead — it installs `phone-code-picker` like a normal package and picks the
+> SDK-matched version of the other four:
+> ```sh
+> npx expo install phone-code-picker @gorhom/bottom-sheet react-native-gesture-handler react-native-reanimated react-native-safe-area-context
+> ```
+
+> **Why peer, not regular, dependencies?** These are native modules. If this package pinned its own
+> copies as regular dependencies, an app that already depends on them directly (nearly every Expo app
+> does) could end up with two separate native-module installs — which breaks or crashes, since a
+> native module can't be safely linked twice in one app. Peer dependencies guarantee there's only
+> ever one copy: yours.
+
+This package only calls stable `@gorhom/bottom-sheet` and `react-native-safe-area-context` APIs, so
+it works with either Reanimated 3 **or** Reanimated 4 — including Expo SDK 54+, which bundles
+Reanimated 4 (New Architecture only) by default.
+
+**What npm *can't* do for you:** these are native modules. Installing the JS package doesn't run
+`pod install`, add Babel plugins, or wrap your app in the right providers — that's a one-time setup
+step in every app that uses this package, package manager or not:
 
 1. **iOS**: run `pod install` (or `npx pod-install`) after installing, so the native code for
    `react-native-reanimated` / `react-native-gesture-handler` is linked.
-2. **Babel**: add Reanimated's plugin, last in the list, in `babel.config.js`:
+2. **Babel**: add the worklets plugin, last in the list, in `babel.config.js` — the plugin path
+   depends on which Reanimated major you're on:
    ```js
    module.exports = {
      presets: ['module:@react-native/babel-preset'], // or 'babel-preset-expo' on Expo
+     // Reanimated 3: 'react-native-reanimated/plugin'
+     // Reanimated 4 (worklets moved to its own package): 'react-native-worklets/plugin'
      plugins: ['react-native-reanimated/plugin'],
    };
    ```
@@ -76,10 +99,6 @@ setup step in every app that uses this package, package manager or not:
    If your app already uses `react-navigation`, it already requires `SafeAreaProvider` at the root
    for its own screens — in that case you just need to add `GestureHandlerRootView` and
    `BottomSheetModalProvider` inside/around your existing `SafeAreaProvider`.
-
-> **Using Expo?** Run `npx expo install react-native-gesture-handler react-native-reanimated
-> react-native-safe-area-context` once instead of relying on the versions `npm install` picked, so
-> they match your Expo SDK exactly — then follow steps 2 and 3 above as normal.
 
 If you skip step 3, opening the picker will either throw or silently do nothing — see
 [Troubleshooting](#troubleshooting).
@@ -376,10 +395,13 @@ safe-area insets internally. See step 3 in [Installation](#installation).
 
 **The list only shows a few countries and won't scroll further.** You're on an app that already had
 `@gorhom/bottom-sheet` installed at an incompatible version, or something upstream is overriding
-`enableDynamicSizing`. Confirm `@gorhom/bottom-sheet` is on `^5.0.0`.
+`enableDynamicSizing`. Confirm `@gorhom/bottom-sheet` is on `>=5.0.0`.
 
-**Metro can't resolve `react-native-reanimated` / `react-native-gesture-handler`.** Those weren't
-linked — re-run `pod install` on iOS, and rebuild (not just reload) on Android after installing.
+**Metro can't resolve `react-native-reanimated` / `react-native-gesture-handler` /
+`@gorhom/bottom-sheet` / `react-native-safe-area-context`.** As of 0.2.0 these are peer dependencies
+— install them yourself (see [Installation](#installation)) if you haven't already. If you have, they
+weren't linked — re-run `pod install` on iOS, and rebuild (not just reload) on Android after
+installing.
 
 **Flags render as boxes/letters on some Android devices.** That's an OS-level emoji font limitation,
 not specific to this package — use `renderTrigger`/`renderCountryRow` to swap in flag images if you
