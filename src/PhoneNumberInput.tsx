@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { CountryCodePicker } from './CountryCodePicker';
@@ -87,6 +87,12 @@ export function PhoneNumberInput({
     },
     [emitChange, isNumberControlled, onChangeText, resolvedMaxLength, selectedCountry],
   );
+
+  // `onChange` otherwise only fires once the user opens the picker or types — report the initial
+  // country/number once on mount so consumers that read the dial code from `onChange` (rather than
+  // from the `defaultCountry` prop they passed in) see it without needing user interaction first.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => emitChange(selectedCountry, number), []);
 
   return (
     <View>

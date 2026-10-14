@@ -8,8 +8,14 @@ dependency's minimum version.
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-10-14
+
 ### Fixed
 
+- `onChange` never fired for the initial/default country selection — only on an explicit picker
+  selection or a text change — so a consumer reading the dial code off `onChange` (instead of
+  duplicating the `defaultCountry` prop itself) saw nothing until the user interacted with the
+  input. Now fires once on mount with the initial country and number.
 - README's install steps were missing `SafeAreaProvider` — `CountryCodePicker` calls
   `useSafeAreaInsets()` internally and throws without one. Documented it as a required root-level
   provider alongside `GestureHandlerRootView`/`BottomSheetModalProvider`, and added the exact error
