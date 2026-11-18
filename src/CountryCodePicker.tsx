@@ -6,13 +6,56 @@ import {
   type BottomSheetBackdropProps,
 } from '@gorhom/bottom-sheet';
 import { useCallback, useMemo, useRef, useState, type ComponentRef } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, useColorScheme, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { buildCountryList, DEFAULT_COUNTRIES, findCountry } from './countries';
 import type { Country, CountryCodePickerProps } from './types';
 
 const DEFAULT_SNAP_POINTS = ['50%', '90%'];
+
+/** Default colors for light/dark appearance — only used where `style` doesn't override them. */
+const LIGHT_COLORS = {
+  triggerBg: '#FFFFFF',
+  triggerBorder: '#E5E7EB',
+  triggerText: '#111827',
+  chevron: '#6B7280',
+  sheetBg: '#FFFFFF',
+  handle: '#D5DAE6',
+  title: '#111827',
+  closeBg: '#F3F4F6',
+  closeIcon: '#6B7280',
+  searchBg: '#F3F4F6',
+  searchIcon: '#9CA3AF',
+  placeholder: '#9CA3AF',
+  searchText: '#111827',
+  rowName: '#111827',
+  rowDialCode: '#6B7280',
+  rowSelectedBg: '#EEF2FF',
+  check: '#4F46E5',
+  emptyText: '#6B7280',
+} as const;
+
+const DARK_COLORS = {
+  triggerBg: '#1C212B',
+  triggerBorder: '#333A49',
+  triggerText: '#F3F4F6',
+  chevron: '#9CA3AF',
+  sheetBg: '#13161F',
+  handle: '#3A4150',
+  title: '#F3F4F6',
+  closeBg: '#262B38',
+  closeIcon: '#9CA3AF',
+  searchBg: '#262B38',
+  searchIcon: '#9CA3AF',
+  placeholder: '#6B7280',
+  searchText: '#F3F4F6',
+  rowName: '#F3F4F6',
+  rowDialCode: '#9CA3AF',
+  rowSelectedBg: '#262B52',
+  check: '#818CF8',
+  emptyText: '#9CA3AF',
+} as const;
 
 /**
  * A trigger button (flag + dial code) that opens a searchable bottom sheet of countries.
@@ -46,6 +89,7 @@ export function CountryCodePicker({
   const { top } = useSafeAreaInsets();
   const sheetRef = useRef<ComponentRef<typeof BottomSheetModal>>(null);
   const [search, setSearch] = useState('');
+  const colors = useColorScheme() === 'dark' ? DARK_COLORS : LIGHT_COLORS;
 
   const list = useMemo(
     () => buildCountryList({ countries, preferredCountries, includeCountries, excludeCountries }),
@@ -95,16 +139,21 @@ export function CountryCodePicker({
         <Pressable
           accessibilityRole="button"
           onPress={() => handleSelect(item)}
-          style={[styles.row, isActive && styles.rowSelected, style?.row, isActive && style?.rowSelected]}
+          style={[
+            styles.row,
+            isActive && { backgroundColor: colors.rowSelectedBg, marginHorizontal: -18, paddingHorizontal: 18, borderRadius: 10 },
+            style?.row,
+            isActive && style?.rowSelected,
+          ]}
         >
           <Text style={[styles.flag, style?.rowFlag]}>{item.flag}</Text>
-          <Text style={[styles.rowName, style?.rowName]}>{item.name}</Text>
-          <Text style={[styles.rowDialCode, style?.rowDialCode]}>{item.dialCode}</Text>
-          {isActive ? <Text style={[styles.check, { color: style?.checkColor ?? '#4F46E5' }]}>✓</Text> : null}
+          <Text style={[styles.rowName, { color: colors.rowName }, style?.rowName]}>{item.name}</Text>
+          <Text style={[styles.rowDialCode, { color: colors.rowDialCode }, style?.rowDialCode]}>{item.dialCode}</Text>
+          {isActive ? <Text style={[styles.check, { color: style?.checkColor ?? colors.check }]}>✓</Text> : null}
         </Pressable>
       );
     },
-    [handleSelect, renderCountryRow, selected.isoCode, style],
+    [colors, handleSelect, renderCountryRow, selected.isoCode, style],
   );
 
   return (
@@ -116,12 +165,12 @@ export function CountryCodePicker({
           accessibilityRole="button"
           disabled={disabled}
           onPress={openSheet}
-          style={[styles.trigger, style?.trigger]}
+          style={[styles.trigger, { backgroundColor: colors.triggerBg, borderColor: colors.triggerBorder }, style?.trigger]}
         >
-          <Text style={[styles.triggerText, style?.triggerText]}>
+          <Text style={[styles.triggerText, { color: colors.triggerText }, style?.triggerText]}>
             {selected.flag} {selected.dialCode}
           </Text>
-          <Text style={[styles.chevron, { color: style?.chevronColor ?? '#6B7280' }]}>▾</Text>
+          <Text style={[styles.chevron, { color: style?.chevronColor ?? colors.chevron }]}>▾</Text>
         </Pressable>
       )}
 
@@ -134,30 +183,38 @@ export function CountryCodePicker({
         keyboardBehavior="extend"
         keyboardBlurBehavior="restore"
         backdropComponent={renderBackdrop}
-        backgroundStyle={[styles.sheetBackground, style?.sheetBackgroundColor ? { backgroundColor: style.sheetBackgroundColor } : null]}
-        handleIndicatorStyle={[styles.handleIndicator, style?.handleColor ? { backgroundColor: style.handleColor } : null]}
+        backgroundStyle={[
+          styles.sheetBackground,
+          { backgroundColor: colors.sheetBg },
+          style?.sheetBackgroundColor ? { backgroundColor: style.sheetBackgroundColor } : null,
+        ]}
+        handleIndicatorStyle={[
+          styles.handleIndicator,
+          { backgroundColor: colors.handle },
+          style?.handleColor ? { backgroundColor: style.handleColor } : null,
+        ]}
       >
         <View style={styles.header}>
-          <Text style={[styles.title, style?.title]}>{title}</Text>
+          <Text style={[styles.title, { color: colors.title }, style?.title]}>{title}</Text>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={closeAccessibilityLabel}
             hitSlop={8}
             onPress={() => sheetRef.current?.dismiss()}
-            style={[styles.closeButton, style?.closeButton]}
+            style={[styles.closeButton, { backgroundColor: colors.closeBg }, style?.closeButton]}
           >
-            <Text style={{ color: style?.closeIconColor ?? '#6B7280', fontSize: 16 }}>✕</Text>
+            <Text style={{ color: style?.closeIconColor ?? colors.closeIcon, fontSize: 16 }}>✕</Text>
           </Pressable>
         </View>
 
-        <View style={[styles.searchContainer, style?.searchContainer]}>
-          <Text style={{ color: style?.searchIconColor ?? '#9CA3AF' }}>🔍</Text>
+        <View style={[styles.searchContainer, { backgroundColor: colors.searchBg }, style?.searchContainer]}>
+          <Text style={{ color: style?.searchIconColor ?? colors.searchIcon }}>🔍</Text>
           <BottomSheetTextInput
             value={search}
             onChangeText={setSearch}
             placeholder={searchPlaceholder}
-            placeholderTextColor={style?.placeholderColor ?? '#9CA3AF'}
-            style={[styles.searchInput, style?.searchInput]}
+            placeholderTextColor={style?.placeholderColor ?? colors.placeholder}
+            style={[styles.searchInput, { color: colors.searchText }, style?.searchInput]}
           />
         </View>
 
@@ -169,7 +226,7 @@ export function CountryCodePicker({
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={
             <View style={styles.empty}>
-              <Text style={styles.emptyText}>{emptyText}</Text>
+              <Text style={[styles.emptyText, { color: colors.emptyText }]}>{emptyText}</Text>
             </View>
           }
         />
@@ -186,26 +243,21 @@ const styles = StyleSheet.create({
     gap: 4,
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: '#E5E7EB',
-    backgroundColor: '#FFFFFF',
     paddingHorizontal: 14,
   },
   triggerText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#111827',
   },
   chevron: {
     fontSize: 14,
     marginLeft: 2,
   },
   sheetBackground: {
-    backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
   },
   handleIndicator: {
-    backgroundColor: '#D5DAE6',
     width: 40,
     height: 5,
   },
@@ -219,7 +271,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#111827',
   },
   closeButton: {
     height: 32,
@@ -227,7 +278,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F3F4F6',
   },
   searchContainer: {
     marginHorizontal: 18,
@@ -237,13 +287,11 @@ const styles = StyleSheet.create({
     gap: 8,
     borderRadius: 12,
     paddingHorizontal: 12,
-    backgroundColor: '#F3F4F6',
   },
   searchInput: {
     flex: 1,
     paddingVertical: 10,
     fontSize: 14,
-    color: '#111827',
   },
   listContent: {
     paddingHorizontal: 18,
@@ -255,12 +303,6 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingVertical: 12,
   },
-  rowSelected: {
-    backgroundColor: '#EEF2FF',
-    marginHorizontal: -18,
-    paddingHorizontal: 18,
-    borderRadius: 10,
-  },
   flag: {
     fontSize: 20,
   },
@@ -268,11 +310,9 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     fontWeight: '500',
-    color: '#111827',
   },
   rowDialCode: {
     fontSize: 14,
-    color: '#6B7280',
   },
   check: {
     fontSize: 16,
@@ -285,6 +325,5 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#6B7280',
   },
 });

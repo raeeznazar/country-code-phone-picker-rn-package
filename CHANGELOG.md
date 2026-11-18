@@ -8,6 +8,14 @@ dependency's minimum version.
 
 ## [Unreleased]
 
+### Fixed
+
+- Both components hard-coded light-theme colors (white backgrounds, near-black text), so on a
+  device/app in dark mode the trigger, bottom sheet, search field, and every country row rendered
+  dark text on a dark background — effectively unreadable. `CountryCodePicker` and
+  `PhoneNumberInput` now read `useColorScheme()` and switch between a light and dark default
+  palette automatically; any color already set via the `style` prop still takes precedence.
+
 ## [0.2.1] - 2026-10-14
 
 ### Fixed

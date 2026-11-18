@@ -1,10 +1,24 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, Text, TextInput, useColorScheme, View } from 'react-native';
 
 import { CountryCodePicker } from './CountryCodePicker';
 import { buildCountryList, DEFAULT_COUNTRIES, findCountry } from './countries';
 import type { Country, PhoneNumberInputProps } from './types';
 import { buildPhoneValue, defaultValidator, digitsOnly, resolveMaxLength } from './utils';
+
+const LIGHT_COLORS = {
+  inputBg: '#FFFFFF',
+  inputBorder: '#E5E7EB',
+  inputText: '#111827',
+  placeholder: '#9CA3AF',
+} as const;
+
+const DARK_COLORS = {
+  inputBg: '#1C212B',
+  inputBorder: '#333A49',
+  inputText: '#F3F4F6',
+  placeholder: '#6B7280',
+} as const;
 
 /**
  * A phone number field with an attached, searchable country code picker — the trigger and the
@@ -44,6 +58,7 @@ export function PhoneNumberInput({
   renderTrigger,
   renderCountryRow,
 }: PhoneNumberInputProps): React.JSX.Element {
+  const colors = useColorScheme() === 'dark' ? DARK_COLORS : LIGHT_COLORS;
   const list = useMemo(
     () => buildCountryList({ countries, preferredCountries, includeCountries, excludeCountries }),
     [countries, preferredCountries, includeCountries, excludeCountries],
@@ -121,6 +136,7 @@ export function PhoneNumberInput({
         <View
           style={[
             styles.inputContainer,
+            { backgroundColor: colors.inputBg, borderColor: colors.inputBorder },
             style?.inputContainer,
             Boolean(error) && (style?.inputContainerError ?? styles.borderError),
           ]}
@@ -129,14 +145,14 @@ export function PhoneNumberInput({
             value={displayValue}
             onChangeText={handleChangeText}
             placeholder={placeholder}
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={colors.placeholder}
             keyboardType={keyboardType}
             textContentType="telephoneNumber"
             autoFocus={autoFocus}
             editable={!disabled}
             returnKeyType="done"
             onSubmitEditing={onSubmitEditing}
-            style={[styles.inputText, style?.inputText]}
+            style={[styles.inputText, { color: colors.inputText }, style?.inputText]}
           />
         </View>
       </View>
@@ -161,8 +177,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: '#E5E7EB',
-    backgroundColor: '#FFFFFF',
     paddingHorizontal: 14,
   },
   borderError: {
@@ -171,7 +185,6 @@ const styles = StyleSheet.create({
   inputText: {
     flex: 1,
     fontSize: 16,
-    color: '#111827',
   },
   errorText: {
     marginTop: 4,
